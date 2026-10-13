@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Model Performance — Credit Card Fraud Detection{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <h1>Model Performance</h1>
+  <p class="subtitle">Genuine, computed evaluation results. No metric on this page is estimated or invented.</p>
+</section>
+
+{% if model_metadata and model_metadata.is_demo %}
+<div class="banner banner-warning">
+  <strong>Synthetic demo model:</strong> all figures below were computed on randomly-generated
+  data used only to exercise the application. They are <strong>not</strong> evidence of real-world
+  fraud-detection performance. Train on the real Kaggle dataset for genuine results.
+</div>
+{% endif %}
+
+{% if not model_metadata %}
+<div class="banner banner-error">
+  <strong>No trained model is available.</strong> {{ model_error }}
+  Run <code>python train_model.py</code> (optionally with <code>--synthetic-demo</code>) to train a model.
+</div>
+{% endif %}
+
+{% if comparison %}
+<section class="card">
+  <h2>Validation Model Comparison</h2>
+  <p class="help-text">Model selection used validation data only (never the held-out test set), scored by
+    Average Precision (area under the Precision-Recall curve) rather than accuracy, which is misleading
+    for a dataset this imbalanced.</p>
+  <table class="data-table">
+    <thead><tr><th>Model</th><th>Validation Avg. Precision (PR-AUC)</th><th>Validation F1 @ 0.5</th></tr></thead>
+    <tbody>
+      {% for name, vals in comparison.items() %}
+      <tr>
+        <td>{{ name }}</td>
+        <td>{{ "%.4f"|format(vals["validation_average_precision"]) }}</td>
+        <td>{{ "%.4f"|format(vals["validation_f1_at_0.5"]) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if plot_files.model_comparison %}
+    <img class="report-plot" src="{{ url_for('report_file', filename=plot_files.model_comparison) }}" alt="Validation model comparison chart">
+  {% endif %}
+</section>
+{% endif %}
+
+{% if metrics %}
+<section class="card">
+  <h2>Final Held-out Test Evaluation</h2>
+  <p class="help-text">
+    Computed once on the <strong>{{ metrics.split }}</strong> split
+    ({{ metrics.n_samples }} samples, {{ metrics.n_fraud }} fraud, {{ metrics.fraud_prevalence_percent }}% prevalence),
+    which was isolated during training and never used for model selection or threshold tuning.
+  </p>
+  <div class="kpi-grid">
+    <div class="kpi-card"><span class="kpi-label">Precision</span><span class="kpi-value">{{ "%.4f"|format(metrics.precision) }}</span></div>
+    <div class="kpi-card"><span class="kpi-label">Recall</span><span class="kpi-value">{{ "%.4f"|format(metrics.recall) }}</span></div>
+    <div class="kpi-card"><span class="kpi-label">F1-score</span><span class="kpi-value">{{ "%.4f"|format(metrics.f1_score) }}</span></div>
+    <div class="kpi-card"><span class="kpi-label">ROC-AUC</span><span class="kpi-value">{{ "%.4f"|format(metrics.roc_auc) if metrics.roc_auc is not none else "N/A" }}</span></div>
+    <div class="kpi-card"><span class="kpi-label">Average Precision (PR-AUC)</span><span class="kpi-value">{{ "%.4f"|format(metrics.average_precision) if metrics.average_precision is not none else "N/A" }}</span></div>
+    <div class="kpi-card"><span class="kpi-label">Decision threshold</span><span class="kpi-value">{{ "%.4f"|format(metrics.decision_threshold) }}</span></div>
+  </div>
+
+  <div class="banner banner-info">
+    <strong>Why not accuracy?</strong> With only {{ metrics.fraud_prevalence_percent }}% of transactions
+    being fraud, a model that labels <em>every</em> transaction legitimate could still score very high
+    accuracy while catching zero fraud. Precision, recall, F1, ROC-AUC, and Average Precision are reported
+    instead because they remain meaningful under severe class imbalance.
+  </div>
+
+  <h3>Confusion Matrix (counts)</h3>
+  <table class="data-table confusion-table">
+    <thead><tr><th></th><th>Predicted Legitimate</th><th>Predicted Fraud</th></tr></thead>
+    <tbody>
+      <tr><th>Actual Legitimate</th><td>{{ metrics.confusion_matrix.tn }}</td><td>{{ metrics.confusion_matrix.fp }}</td></tr>
+      <tr><th>Actual Fraud</th><td>{{ metrics.confusion_matrix.fn }}</td><td>{{ metrics.confusion_matrix.tp }}</td></tr>
+    </tbody>
+  </table>
+
+  <div class="plot-grid">
+    {% if plot_files.confusion_matrix %}<img class="report-plot" src="{{ url_for('report_file', filename=plot_files.confusion_matrix) }}" alt="Confusion matrix">{% endif %}
+    {% if plot_files.roc_curve %}<img class="report-plot" src="{{ url_for('report_file', filename=plot_files.roc_curve) }}" alt="ROC curve">{% endif %}
+    {% if plot_files.pr_curve %}<img class="report-plot" src="{{ url_for('report_file', filename=plot_files.pr_curve) }}" alt="Precision-recall curve">{% endif %}
+  </div>
+</section>
+{% else %}
+<section class="card">
+  <h2>Final Test Evaluation</h2>
+  <div class="banner banner-error">
+    Not yet generated. Run <code>python evaluate_model.py</code> after training a model to compute and
+    save final held-out test metrics.
+  </div>
+</section>
+{% endif %}
+{% endblock %}

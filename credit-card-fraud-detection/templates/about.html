@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}About — Credit Card Fraud Detection{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <h1>About &amp; Methodology</h1>
+</section>
+
+<section class="card">
+  <h2>Problem Statement</h2>
+  <p>
+    Credit card fraud causes significant financial loss, and fraudulent transactions are
+    extremely rare relative to legitimate ones. This project explores supervised machine
+    learning approaches to flag potentially fraudulent transactions from anonymized,
+    PCA-transformed transaction features, as a final-year academic exercise.
+  </p>
+</section>
+
+<section class="card">
+  <h2>Dataset</h2>
+  <p>
+    The reference dataset is the public
+    <a href="{{ kaggle_url }}" target="_blank" rel="noopener">Kaggle "Credit Card Fraud Detection" dataset</a>,
+    containing transactions made by European cardholders in September 2013. Features
+    <code>V1</code>&ndash;<code>V28</code> are the result of a PCA transformation applied by the
+    dataset's original authors to protect confidentiality; only <code>Time</code> and
+    <code>Amount</code> are not transformed. The target column <code>Class</code> is 1 for
+    fraud and 0 for legitimate transactions. Fraud accounts for roughly 0.17% of transactions
+    in the real dataset &mdash; a severe class imbalance.
+  </p>
+  <p>Required feature columns used by this application:</p>
+  <p class="help-text">{{ feature_columns|join(", ") }}</p>
+</section>
+
+<section class="card">
+  <h2>Preprocessing</h2>
+  <ul class="styled-list">
+    <li>Exact duplicate rows are removed before splitting, to avoid the same transaction
+      appearing in both the training and test sets.</li>
+    <li>Rows with missing, non-numeric, or infinite values in required columns are dropped.</li>
+    <li>Data is split into stratified train / validation / held-out test sets using a fixed
+      random seed. The test set is touched only once, for final evaluation.</li>
+    <li>Scaling (for Logistic Regression) and any class-imbalance resampling are fit on the
+      training split only, never on validation or test data.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2>Algorithms Compared</h2>
+  <ul class="styled-list">
+    <li><strong>Logistic Regression</strong> (baseline) &mdash; a linear model with standardized
+      features and balanced class weights.</li>
+    <li><strong>Random Forest</strong> (comparison model) &mdash; an ensemble of decision trees,
+      which does not require feature scaling, also using balanced class weights.</li>
+    <li><strong>Logistic Regression + SMOTE</strong> (when imbalanced-learn is installed) &mdash;
+      synthetic minority oversampling applied strictly within the training fold.</li>
+  </ul>
+  <p>
+    The final model is selected by validation Average Precision (area under the
+    Precision-Recall curve), not accuracy, because accuracy is misleading when fraud is such
+    a small fraction of all transactions.
+  </p>
+</section>
+
+<section class="card">
+  <h2>Evaluation Metrics</h2>
+  <p>Precision, Recall, F1-score, ROC-AUC, Average Precision (PR-AUC), and the full confusion
+    matrix are reported on the held-out test split. The decision threshold is tuned on
+    validation data only (maximizing F1) and then applied, unchanged, to the test split.</p>
+</section>
+
+<section class="card">
+  <h2>Limitations</h2>
+  <ul class="styled-list">
+    <li>This is an educational prototype, not a production payment-security system. No PCI DSS
+      or regulatory compliance is claimed.</li>
+    <li>Model scores are raw outputs, not calibrated real-world probabilities, unless explicitly
+      calibrated and labeled as such.</li>
+    <li>A random stratified split may let "future" transactions leak into training relative to a
+      real deployment, where the model only ever sees past data. A chronological split
+      (available in <code>src/preprocessing.py</code>) better approximates deployment conditions
+      but was not necessarily used for the metrics shown, depending on how training was run.</li>
+    <li>Synthetic-data results (when present) demonstrate the software only and must never be
+      cited as real fraud-detection performance.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2>Security &amp; Privacy</h2>
+  <ul class="styled-list">
+    <li>No real card numbers, CVVs, expiry dates, or cardholder names are collected anywhere
+      in this application.</li>
+    <li>Uploaded CSV files are processed in temporary storage and deleted immediately after
+      analysis.</li>
+    <li>Only derived prediction outputs (not raw feature vectors) are stored in the
+      demonstration history database.</li>
+  </ul>
+</section>
+{% endblock %}

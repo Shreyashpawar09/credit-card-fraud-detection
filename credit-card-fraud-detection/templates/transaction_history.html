@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Transaction History — Credit Card Fraud Detection{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <h1>Demonstration Prediction History</h1>
+  <p class="subtitle">
+    Recent single-transaction predictions made through this app. Only derived outputs
+    (timestamp, predicted class, score) are stored &mdash; raw feature vectors and payment
+    details are never saved. Batch CSV uploads are not persisted here; download their results
+    directly from the Batch Analysis page.
+  </p>
+</section>
+
+<section class="card">
+  {% if records %}
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Timestamp (UTC)</th>
+          <th>Source</th>
+          <th>Predicted Class</th>
+          <th>Score</th>
+          <th>Threshold</th>
+          <th>Model</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td>{{ r.created_at }}</td>
+          <td>{{ r.source }}</td>
+          <td><span class="pill {{ 'pill-fraud' if r.predicted_class == 1 else 'pill-legit' }}">{{ r.predicted_label }}</span></td>
+          <td>{{ "%.4f"|format(r.score) if r.score is not none else "N/A" }}</td>
+          <td>{{ "%.4f"|format(r.decision_threshold) if r.decision_threshold is not none else "N/A" }}</td>
+          <td>{{ "Synthetic demo" if r.model_is_demo else "Trained model" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>No predictions have been recorded yet.</p>
+    <a class="btn btn-primary" href="{{ url_for('predict') }}">Make your first prediction</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

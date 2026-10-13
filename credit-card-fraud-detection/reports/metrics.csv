@@ -1,0 +1,2 @@
+split,n_samples,n_fraud,fraud_prevalence_percent,decision_threshold,precision,recall,f1_score,roc_auc,average_precision,tn,fp,fn,tp
+test,4000,69,1.725,0.16,1.0,0.9855072463768116,0.9927007299270073,0.9999815660727256,0.9988405797101448,3931,0,1,68

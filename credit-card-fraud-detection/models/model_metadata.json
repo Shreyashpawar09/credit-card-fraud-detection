@@ -1,0 +1,63 @@
+{
+  "model_name": "random_forest",
+  "model_version": "20261013055017",
+  "trained_at_utc": "2026-10-13T05:50:17.165772+00:00",
+  "feature_columns": [
+    "Time",
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "V6",
+    "V7",
+    "V8",
+    "V9",
+    "V10",
+    "V11",
+    "V12",
+    "V13",
+    "V14",
+    "V15",
+    "V16",
+    "V17",
+    "V18",
+    "V19",
+    "V20",
+    "V21",
+    "V22",
+    "V23",
+    "V24",
+    "V25",
+    "V26",
+    "V27",
+    "V28",
+    "Amount"
+  ],
+  "target_column": "Class",
+  "decision_threshold": 0.16,
+  "threshold_selection_method": "F1-optimal over validation precision-recall curve",
+  "dataset_source": "synthetic_demo",
+  "dataset_path": "<synthetically generated in-memory>",
+  "is_demo": true,
+  "is_calibrated": false,
+  "random_seed": 42,
+  "n_train_rows": 12800,
+  "n_validation_rows": 3200,
+  "n_test_rows": 4000,
+  "candidate_validation_comparison": {
+    "logistic_regression": {
+      "validation_average_precision": 0.9841757753487959,
+      "validation_f1_at_0.5": 0.8780487804878049
+    },
+    "random_forest": {
+      "validation_average_precision": 1.0,
+      "validation_f1_at_0.5": 0.5333333333333333
+    },
+    "logistic_regression_smote": {
+      "validation_average_precision": 0.9851506069687888,
+      "validation_f1_at_0.5": 0.9310344827586207
+    }
+  },
+  "imbalanced_learn_available": true
+}

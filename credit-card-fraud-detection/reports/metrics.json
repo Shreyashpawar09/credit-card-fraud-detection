@@ -1,0 +1,50 @@
+{
+  "split": "test",
+  "n_samples": 4000,
+  "n_fraud": 69,
+  "fraud_prevalence_percent": 1.725,
+  "decision_threshold": 0.16,
+  "confusion_matrix": {
+    "tn": 3931,
+    "fp": 0,
+    "fn": 1,
+    "tp": 68
+  },
+  "precision": 1.0,
+  "recall": 0.9855072463768116,
+  "f1_score": 0.9927007299270073,
+  "roc_auc": 0.9999815660727256,
+  "average_precision": 0.9988405797101448,
+  "average_precision_metric_name": "Average Precision (area under the Precision-Recall curve)",
+  "classification_report": {
+    "0": {
+      "precision": 0.9997456765005086,
+      "recall": 1.0,
+      "f1-score": 0.9998728220780873,
+      "support": 3931.0
+    },
+    "1": {
+      "precision": 1.0,
+      "recall": 0.9855072463768116,
+      "f1-score": 0.9927007299270073,
+      "support": 69.0
+    },
+    "accuracy": 0.99975,
+    "macro avg": {
+      "precision": 0.9998728382502543,
+      "recall": 0.9927536231884058,
+      "f1-score": 0.9962867760025473,
+      "support": 4000.0
+    },
+    "weighted avg": {
+      "precision": 0.9997500635808748,
+      "recall": 0.99975,
+      "f1-score": 0.9997491034884811,
+      "support": 4000.0
+    }
+  },
+  "model_name": "random_forest",
+  "dataset_source": "synthetic_demo",
+  "is_demo": true,
+  "model_version": "20261013055017"
+}

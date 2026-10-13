@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Batch Analysis — Credit Card Fraud Detection{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <h1>CSV Batch Analysis</h1>
+  <p class="subtitle">
+    Upload a CSV containing the 30 required feature columns
+    (<code>Time</code>, <code>V1</code>&ndash;<code>V28</code>, <code>Amount</code>).
+    A target/label column is <strong>not required</strong> for inference.
+  </p>
+</section>
+
+<div class="banner banner-info">
+  Limits: up to <strong>{{ max_rows }}</strong> rows per file, <strong>{{ max_mb }} MB</strong> max upload size.
+  Uploaded files are processed in memory/temp storage only and deleted immediately after analysis &mdash;
+  nothing from your file is retained on the server.
+</div>
+
+{% if form_errors %}
+<div class="banner banner-error" role="alert">
+  <strong>Upload could not be processed:</strong>
+  <ul>
+    {% for err in form_errors %}<li>{{ err }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if summary %}
+<section class="card result-card">
+  <h2>Batch Summary</h2>
+  {% if summary.model_is_demo %}
+    <div class="banner banner-warning">Produced by a <strong>synthetic demo model</strong> — not real fraud-detection evidence.</div>
+  {% endif %}
+  <div class="result-grid">
+    <div><span class="result-label">Transactions analyzed</span><span class="result-value">{{ summary.n_total }}</span></div>
+    <div><span class="result-label">Flagged as fraud</span><span class="result-value status-missing">{{ summary.n_fraud }}</span></div>
+    <div><span class="result-label">Flagged as legitimate</span><span class="result-value status-ok">{{ summary.n_legitimate }}</span></div>
+    <div><span class="result-label">Fraud rate (predicted)</span><span class="result-value">{{ summary.fraud_percentage }}%</span></div>
+    <div><span class="result-label">Decision threshold</span><span class="result-value">{{ "%.4f"|format(summary.decision_threshold) }}</span></div>
+  </div>
+  <div id="batchChart" class="chart-placeholder" data-fraud="{{ summary.n_fraud }}" data-legit="{{ summary.n_legitimate }}"></div>
+  <a class="btn btn-primary" href="{{ url_for('batch_download', token=download_token) }}">Download results CSV</a>
+</section>
+{% endif %}
+
+<form method="POST" action="{{ url_for('batch_analyze') }}" enctype="multipart/form-data" class="card" id="batchForm">
+  <div class="form-field">
+    <label for="csv_file">CSV file</label>
+    <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+  </div>
+  <p class="help-text">Required columns: {{ required_columns|join(", ") }}</p>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Analyze CSV</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

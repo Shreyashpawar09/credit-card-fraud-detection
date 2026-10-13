@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Something Went Wrong{% endblock %}
+
+{% block content %}
+<section class="card error-page">
+  <h1>{{ code or 500 }} &mdash; Something Went Wrong</h1>
+  <p>{{ message or "An unexpected error occurred. Please try again." }}</p>
+  <a class="btn btn-primary" href="{{ url_for('index') }}">Return to Dashboard</a>
+</section>
+{% endblock %}

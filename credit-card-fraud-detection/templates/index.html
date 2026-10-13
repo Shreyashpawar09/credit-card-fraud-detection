@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Credit Card Fraud Detection{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <h1>Dashboard</h1>
+  <p class="subtitle">Live status of the dataset, trained model, and demonstration prediction history.</p>
+</section>
+
+{% if status.model_available and status.model_metadata.is_demo %}
+<div class="banner banner-warning">
+  <strong>Demo mode:</strong> the loaded model was trained on <strong>synthetic</strong> data for
+  interface demonstration and testing only. Its metrics do <strong>not</strong> represent real
+  fraud-detection performance. Train on the real Kaggle dataset for genuine results.
+</div>
+{% endif %}
+
+<section class="kpi-grid">
+  <div class="kpi-card">
+    <span class="kpi-label">Dataset</span>
+    {% if status.dataset_available %}
+      <span class="kpi-value status-ok">Found</span>
+      <span class="kpi-sub">{{ status.dataset_path }}</span>
+    {% else %}
+      <span class="kpi-value status-missing">Not found</span>
+      <span class="kpi-sub">Expected at {{ status.dataset_path }}</span>
+    {% endif %}
+  </div>
+
+  <div class="kpi-card">
+    <span class="kpi-label">Model</span>
+    {% if status.model_available %}
+      <span class="kpi-value status-ok">{{ status.model_metadata.model_name }}</span>
+      <span class="kpi-sub">
+        {% if status.model_metadata.is_demo %}Synthetic demo model{% else %}Trained on real dataset{% endif %}
+        &middot; threshold {{ "%.3f"|format(status.model_metadata.decision_threshold) }}
+      </span>
+    {% else %}
+      <span class="kpi-value status-missing">Unavailable</span>
+      <span class="kpi-sub">{{ status.model_error }}</span>
+    {% endif %}
+  </div>
+
+  <div class="kpi-card">
+    <span class="kpi-label">Evaluation Report</span>
+    {% if status.metrics_available %}
+      <span class="kpi-value status-ok">Available</span>
+      <span class="kpi-sub">F1 {{ "%.3f"|format(status.metrics.f1_score) }} on {{ status.metrics.split }} split</span>
+    {% else %}
+      <span class="kpi-value status-missing">Not generated</span>
+      <span class="kpi-sub">Run evaluate_model.py after training</span>
+    {% endif %}
+  </div>
+
+  <div class="kpi-card">
+    <span class="kpi-label">Demo Predictions Logged</span>
+    <span class="kpi-value status-neutral">{{ status.recent_prediction_count }}</span>
+    <span class="kpi-sub">Single-transaction predictions recorded this session</span>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Quick Start</h2>
+  {% if not status.dataset_available and not status.model_available %}
+    <p>No dataset or trained model was detected yet. You can:</p>
+    <ol class="styled-list">
+      <li>Download the real dataset from
+        <a href="https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud" target="_blank" rel="noopener">Kaggle</a>
+        and place <code>creditcard.csv</code> at <code>data/raw/creditcard.csv</code>, then run
+        <code>python train_model.py</code> and <code>python evaluate_model.py</code>; or
+      </li>
+      <li>Run <code>python train_model.py --synthetic-demo</code> to explore the full application
+        immediately using clearly-labeled synthetic data (not real fraud-detection evidence).</li>
+    </ol>
+  {% elif status.model_available %}
+    <p>The model is loaded and ready. Try a
+      <a href="{{ url_for('predict') }}">single transaction prediction</a>,
+      run a <a href="{{ url_for('batch_analysis') }}">batch CSV analysis</a>, or review
+      <a href="{{ url_for('model_performance') }}">model performance</a>.</p>
+  {% else %}
+    <p>A dataset was found, but no trained model is available yet. Run
+      <code>python train_model.py</code> to train and save a model.</p>
+  {% endif %}
+</section>
+{% endblock %}

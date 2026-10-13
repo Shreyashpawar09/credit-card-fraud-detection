@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Predict — Credit Card Fraud Detection{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <h1>Single Transaction Prediction</h1>
+  <p class="subtitle">
+    Enter the 30 model features (<code>Time</code>, <code>V1</code>&ndash;<code>V28</code>,
+    <code>Amount</code>). No card numbers, CVV, expiry dates, or cardholder names are collected.
+  </p>
+</section>
+
+{% if form_errors %}
+<div class="banner banner-error" role="alert">
+  <strong>Please fix the following:</strong>
+  <ul>
+    {% for err in form_errors %}<li>{{ err }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if result %}
+<section class="card result-card {{ 'result-fraud' if result.predicted_class == 1 else 'result-legit' }}">
+  <h2>Prediction Result</h2>
+  {% if result.model_is_demo %}
+    <div class="banner banner-warning">Produced by a <strong>synthetic demo model</strong> — not real fraud-detection evidence.</div>
+  {% endif %}
+  <div class="result-grid">
+    <div><span class="result-label">Predicted class</span><span class="result-value">{{ result.label }} ({{ result.predicted_class }})</span></div>
+    <div><span class="result-label">Model score</span><span class="result-value">{{ "%.4f"|format(result.score) }}</span></div>
+    <div><span class="result-label">Decision threshold</span><span class="result-value">{{ "%.4f"|format(result.decision_threshold) }}</span></div>
+    <div><span class="result-label">Calibrated probability?</span><span class="result-value">{{ "Yes" if result.is_calibrated_probability else "No (raw model score)" }}</span></div>
+  </div>
+  <p class="interpretation">
+    {% if result.predicted_class == 1 %}
+      The model flags this transaction as <strong>likely fraudulent</strong> because its score
+      ({{ "%.4f"|format(result.score) }}) is at or above the configured decision threshold
+      ({{ "%.4f"|format(result.decision_threshold) }}).
+    {% else %}
+      The model classifies this transaction as <strong>legitimate</strong> because its score
+      ({{ "%.4f"|format(result.score) }}) is below the configured decision threshold
+      ({{ "%.4f"|format(result.decision_threshold) }}).
+    {% endif %}
+    This score is {{ "a calibrated probability" if result.is_calibrated_probability else "a raw model score, not a calibrated real-world probability" }}.
+  </p>
+</section>
+{% endif %}
+
+<form method="POST" action="{{ url_for('predict') }}" class="card prediction-form" id="predictForm" novalidate>
+  <div class="form-row form-row-highlight">
+    <div class="form-field">
+      <label for="Time">Time (seconds since first transaction)</label>
+      <input type="number" step="any" min="0" id="Time" name="Time" value="{{ submitted_values['Time'] }}" required>
+    </div>
+    <div class="form-field">
+      <label for="Amount">Amount</label>
+      <input type="number" step="any" min="0" id="Amount" name="Amount" value="{{ submitted_values['Amount'] }}" required>
+    </div>
+  </div>
+
+  <h3 class="form-subheading">PCA-transformed features (V1&ndash;V28)</h3>
+  <div class="form-grid-v">
+    {% for v in v_features %}
+    <div class="form-field form-field-compact">
+      <label for="{{ v }}">{{ v }}</label>
+      <input type="number" step="any" id="{{ v }}" name="{{ v }}" value="{{ submitted_values[v] }}" required>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Run Prediction</button>
+    <button type="button" class="btn btn-secondary" id="fillSampleBtn">Fill sample values</button>
+    <button type="reset" class="btn btn-ghost">Clear</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
